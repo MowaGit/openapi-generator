@@ -18,7 +18,7 @@ class ApiClient {
   final _regList = RegExp(r'^List<(.*)>$');
   final _regMap = RegExp(r'^Map<String,(.*)>$');
 
-  ApiClient({this.basePath = "{{{basePath}}}"}) {
+  ApiClient({this.basePath = "{{{basePath}}}", HttpBearerAuth httpBearerAuth}) {
   {{#hasAuthMethods}}
     // Setup authentications (key: authentication name, value: authentication).
   {{#authMethods}}
@@ -27,7 +27,7 @@ class ApiClient {
     _authentications['{{name}}'] = HttpBasicAuth();
   {{/isBasicBasic}}
   {{#isBasicBearer}}
-    _authentications['{{name}}'] = HttpBearerAuth();
+    _authentications['{{name}}'] = httpBearerAuth ?? HttpBearerAuth();
   {{/isBasicBearer}}
   {{/isBasic}}
   {{#isApiKey}}
@@ -118,7 +118,7 @@ class ApiClient {
                              String nullableContentType,
                              List<String> authNames) async {
 
-    _updateParamsForAuth(authNames, queryParams, headerParams);
+    await _updateParamsForAuth(authNames, queryParams, headerParams);
 
     var ps = queryParams
       .where((p) => p.value != null)
@@ -166,11 +166,11 @@ class ApiClient {
 
   /// Update query and header parameters based on authentication settings.
   /// @param authNames The authentications to apply
-  void _updateParamsForAuth(List<String> authNames, List<QueryParam> queryParams, Map<String, String> headerParams) {
-    authNames.forEach((authName) {
+  Future<void> _updateParamsForAuth(List<String> authNames, List<QueryParam> queryParams, Map<String, String> headerParams) async {
+    authNames.forEach((authName) async {
       Authentication auth = _authentications[authName];
       if (auth == null) throw ArgumentError("Authentication undefined: " + authName);
-      auth.applyToParams(queryParams, headerParams);
+      await auth.applyToParams(queryParams, headerParams);
     });
   }
 

@@ -6,19 +6,21 @@ class HttpBearerAuth implements Authentication {
   HttpBearerAuth() { }
 
   @override
-  void applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
+  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) async {
     if (_accessToken is String) {
       headerParams["Authorization"] = "Bearer " + _accessToken;
     } else if (_accessToken is String Function()){
       headerParams["Authorization"] = "Bearer " + _accessToken();
+    } else if (_accessToken is Future<String> Function()){
+      headerParams["Authorization"] = "Bearer " + await _accessToken();
     } else {
       throw ArgumentError('Type of Bearer accessToken should be String or String Function().');
     }
   }
 
   void setAccessToken(dynamic accessToken) {
-    if (!((accessToken is String) | (accessToken is String Function()))){
-      throw ArgumentError('Type of Bearer accessToken should be String or String Function().');
+    if (!((accessToken is String) |(accessToken is Future<String> Function()) | (accessToken is String Function()))){
+      throw ArgumentError('Type of Bearer accessToken should be String or String Function() or Future<String> Function().');
     } 
     this._accessToken = accessToken;
   }
