@@ -166,8 +166,8 @@ class ApiClient {
 
   /// Update query and header parameters based on authentication settings.
   /// @param authNames The authentications to apply
-  Future<void> _updateParamsForAuth(List<String> authNames, List<QueryParam> queryParams, Map<String, String> headerParams) async {
-    authNames.forEach((authName) async {
+  Future<void> _updateParamsForAuth(List<String> authNames, List<QueryParam> queryParams, Map<String, String> headerParams) async {  
+    await Future.forEach(authNames, (authName) async {
       Authentication auth = _authentications[authName];
       if (auth == null) throw ArgumentError("Authentication undefined: " + authName);
       await auth.applyToParams(queryParams, headerParams);
